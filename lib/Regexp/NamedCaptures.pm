@@ -9,15 +9,24 @@ use 5.007_01;
 use Text::Balanced qw( extract_bracketed extract_quotelike );
 use Carp qw( croak carp );
 
-if ( not eval { require Params::Validate } ) {
-    eval q[
-sub validate (\@$) { return @{$_[0]} }
-sub SCALAR () { 0 }
-sub UNDEF () { 0 }
-sub CODEREF () { 0 }
-];
+# Attempt to load a real Params::Validate or just create a fake one if
+# the user doesn't have one.`
+BEGIN {
+    eval {
+	require Params::Validate;
+	Params::Validate->import( 'validate_pos',
+				  'SCALAR',
+				  'UNDEF',
+				  'CODEREF' );
+    };
+    
+    if ( $@ ) {
+	eval( 'sub validate_pos (\@@) { @{$_[0]} }'
+	      . 'sub SCALAR () { 0 }'
+	      . 'sub UNDEF () { 0 }'
+	      . 'sub CODEREF () { 0 }' );
+    }
 }
-use Params::Validate qw( validate_pos SCALAR UNDEF CODEREF );
 
 # Predeclare these so I can call them without needing parentheses and
 # so perl will help me notice if I've mispelled them at *compile*
@@ -33,11 +42,11 @@ Regexp::NamedCaptures - Saves capture results to your own variables
 
 =head1 VERSION
 
-Version 0.02
+Version 0.03
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 =head1 SYNOPSIS
 
@@ -110,6 +119,12 @@ regular expressions at runtime.
 sub convert {
     my ( $in ) = validate_pos( @_,
                                { type => SCALAR | UNDEF } );
+    
+    if ( not defined $in ) {
+	$in = '';
+	carp "Use of uninitialized value in regexp compilation";
+    }
+    
     my $out = '';
     while ( length $in ) {
         # Seek $in forward until a (?< or (?' is found. Be sure to
@@ -129,7 +144,7 @@ sub convert {
             ( $expr, $in ) = extract_bracketed $in, '()';
             $out .= ( '(?<'  eq substr( $expr, 0, 3 ) ? _convert_chevron_expr $expr :
                       '(?\'' eq substr( $expr, 0, 3 ) ? _convert_quote_expr $expr :
-                      croak "Invalid escape sequence in $expr" );
+                      croak "Invalid escape sequence in $expr." );
         }
     }
     
@@ -168,7 +183,7 @@ BEGIN-time instead of runtime.
 
 =head1 AUTHOR
 
-Joshua ben Jore C<< <jjore@cpan.org> >>
+"Joshua ben Jore C" << <jjore@cpan.org> >>
 
 =head1 BUGS
 
@@ -242,7 +257,7 @@ sub _convert_foo_expr {
     
     # Rewrite the expression so it's a plain capture followed by a
     # code block.
-    return "(?:($expr)(?{$name=\$^N})|(?{$name=undef}))";
+    return "(?:($expr)(?{$name=\$^N})|(?{$name=undef})(?!))";
 }
 
 #####################################################################
@@ -256,15 +271,18 @@ use overload( '.' => \ &_concat,
 sub import {
     # Constants are overloaded so their fragments are passed to
     # _postpone().
-    overload::constant qr => \ &_postpone;
+    overload::constant 'qr' => \ &_postpone;
 }
 
 sub _postpone {
     # _postpone returns an object.
-
     my ( $re ) = @_;
+    
+    # If I was given an undef, pass the error back to the right
+    # place. Without this, the user is going to get an error about an
+    # undefined value in *my* code. Blech.
     if ( not defined $re ) {
-        carp "Use of uninitialized value in concatenation (.) or string";
+        carp "Use of uninitialized value in regexp compilation";
         $re = '';
     }
     return bless \ $re, __PACKAGE__;
@@ -279,6 +297,10 @@ sub _concat {
     
     for ( $a, $b ) {
         $_ = $$_ if ref eq __PACKAGE__;
+	
+	# As in _postpone, I want to pass this warning off as my
+	# caller's problem and not a problem with
+	# Regexp::NamedCaptures.
         if ( not defined ) {
             carp "Use of uninitialized value in concatenation (.) or string";
             $_ = '';
@@ -292,11 +314,9 @@ sub _concat {
 sub _finalize {
     # _finalize happens when the regex is due to be compiled. Here, I
     # just rethrow the regex to the user-accessible function
-    # convert(). Its also supposed to be slightly faster to call
-    # functions this way.
+    # convert().
     
     return convert ${$_[0]};
 }
 
-
-1; # End of Regexp::NamedCaptures
+"Read more smut.";

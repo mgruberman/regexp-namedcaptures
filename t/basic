@@ -1,0 +1,61 @@
+#!perl
+
+use warnings;
+
+# this is run by other scripts in a `do "t/basic"' after setting
+# $OPEN_NAME and $CLOSE_NAME
+
+$OPEN_NAME or die "\$OPEN_NAME wasn't set";
+$CLOSE_NAME or die "\$CLOSE_NAME wasn't set";
+
+# Runtime conversions
+is( Regexp::NamedCaptures::convert( "(?$OPEN_NAME\\\$_$CLOSE_NAME...)" ),
+    '(?:(...)(?{$_=$^N})|(?{$_=undef})(?!))' );
+
+# Compile-time conversions
+is( eval( "#line ".(1+__LINE__)." \"".__FILE__."\"\n"
+          . "use Regexp::NamedCaptures;\n"
+          . "qr/(?$OPEN_NAME\\\$_$CLOSE_NAME...)/" )
+    || $@,
+    '(?-xism:(?:(...)(?{$_=$^N})|(?{$_=undef})(?!)))' );
+
+# Compile-time concatenation
+my $nop = '(?#)';
+is( eval( "#line ".(1+__LINE__)." \"".__FILE__."\"\n"
+          . "use Regexp::NamedCaptures;\n"
+          . "use re 'eval';\n"
+          . "qr/(?#)(?$OPEN_NAME\\\$_$CLOSE_NAME...)/" )
+    || $@,
+    '(?-xism:(?#)(?:(...)(?{$_=$^N})|(?{$_=undef})(?!)))' );
+is( eval( "#line ".(1+__LINE__)." \"".__FILE__."\"\n"
+          . "use Regexp::NamedCaptures;\n"
+          . "use re 'eval';\n"
+          . "qr/(?$OPEN_NAME\\\$_$CLOSE_NAME\$nop...)/" )
+    || $@,
+    '(?-xism:(?:((?#)...)(?{$_=$^N})|(?{$_=undef})(?!)))' );
+is( eval( "#line ".(1+__LINE__)." \"".__FILE__."\"\n"
+          . "use Regexp::NamedCaptures;\n"
+          . "use re 'eval';\n"
+          . "qr/(?$OPEN_NAME\\\$_$CLOSE_NAME...\$nop)/" )
+    || $@,
+    '(?-xism:(?:(...(?#))(?{$_=$^N})|(?{$_=undef})(?!)))' );
+is( eval( "#line ".(1+__LINE__)." \"".__FILE__."\"\n"
+          . "use Regexp::NamedCaptures;\n"
+          . "use re 'eval';\n"
+          . "qr/(?$OPEN_NAME\\\$_$CLOSE_NAME...)\$nop/" )
+    || $@,
+    '(?-xism:(?:(...)(?{$_=$^N})|(?{$_=undef})(?!))(?#))' );
+
+{
+    my $word;
+    my $re = eval( "#line ".(1+__LINE__)." \"".__FILE__."\"\n"
+                   . "use Regexp::NamedCaptures;\n"
+                   . "use re 'eval';\n"
+                   . "qr/(?$OPEN_NAME\\\$word$CLOSE_NAME\\w+)/" )
+      || $@;
+    is( $re,
+        '(?-xism:(?:(\w+)(?{$word=$^N})|(?{$word=undef})(?!)))' );
+    ok( " root " =~ $re );
+    is( $word,
+        'root' );
+}

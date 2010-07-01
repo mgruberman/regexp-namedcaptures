@@ -2,7 +2,7 @@ NAME
     Regexp::NamedCaptures - Saves capture results to your own variables
 
 VERSION
-    Version 0.01
+    Version 0.03
 
 SYNOPSIS
      use Regexp::NamedCaptures;
@@ -92,7 +92,7 @@ FUNCTIONS
     BEGIN-time instead of runtime.
 
 AUTHOR
-    Joshua ben Jore, "<jjore@cpan.org>"
+    Joshua ben Jore "<jjore@cpan.org>"
 
 BUGS
     \Q escapes are completed ignored. If you try to use one to prevent
