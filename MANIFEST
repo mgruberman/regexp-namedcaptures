@@ -14,3 +14,4 @@ t/11static.t
 t/12static.t
 t/13interp.t
 t/14recurse.t
+t/15no_warn.t

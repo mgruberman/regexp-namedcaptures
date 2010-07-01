@@ -33,11 +33,11 @@ Regexp::NamedCaptures - Saves capture results to your own variables
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 SYNOPSIS
 
@@ -111,7 +111,6 @@ sub convert {
     my ( $in ) = validate_pos( @_,
                                { type => SCALAR | UNDEF } );
     my $out = '';
-    print "IN=$in\n";
     while ( length $in ) {
         # Seek $in forward until a (?< or (?' is found. Be sure to
         # exclude (?<! and (?<= because they are normal regexp
