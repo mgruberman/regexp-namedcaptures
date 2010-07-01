@@ -13,18 +13,16 @@ use Carp qw( croak carp );
 # the user doesn't have one.`
 BEGIN {
     eval {
-	require Params::Validate;
-	Params::Validate->import( 'validate_pos',
-				  'SCALAR',
-				  'UNDEF',
-				  'CODEREF' );
+        require Params::Validate;
+        Params::Validate->import( 'validate_pos', 'SCALAR', 'UNDEF',
+            'CODEREF' );
     };
-    
-    if ( $@ ) {
-	eval( 'sub validate_pos (\@@) { @{$_[0]} }'
-	      . 'sub SCALAR () { 0 }'
-	      . 'sub UNDEF () { 0 }'
-	      . 'sub CODEREF () { 0 }' );
+
+    if ($@) {
+        eval(     'sub validate_pos (\@@) { @{$_[0]} }'
+                . 'sub SCALAR () { 0 }'
+                . 'sub UNDEF () { 0 }'
+                . 'sub CODEREF () { 0 }' );
     }
 }
 
@@ -42,11 +40,11 @@ Regexp::NamedCaptures - Saves capture results to your own variables
 
 =head1 VERSION
 
-Version 0.03
+Version 0.04
 
 =cut
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 =head1 SYNOPSIS
 
@@ -117,37 +115,52 @@ regular expressions at runtime.
 =cut
 
 sub convert {
-    my ( $in ) = validate_pos( @_,
-                               { type => SCALAR | UNDEF } );
-    
+    my ($in) = validate_pos( @_, { type => SCALAR | UNDEF } );
+
     if ( not defined $in ) {
-	$in = '';
-	carp "Use of uninitialized value in regexp compilation";
+        $in = '';
+        carp "Use of uninitialized value in regexp compilation";
     }
-    
+
+    my @targets;
     my $out = '';
     while ( length $in ) {
+
         # Seek $in forward until a (?< or (?' is found. Be sure to
         # exclude (?<! and (?<= because they are normal regexp
         # patterns.
         if ( $in !~ /\((?:(?=\?<[^!=])|(?=\?\'))/ ) {
+
             # Nothing was found - copy the rest of $in to $out and
             # empty $in.
             $out .= $in;
             $in = '';
         }
         else {
+
             # Copy any leading text directly to the output.
             $out .= substr $in, 0, $-[0], '';
-            
+
             my $expr;
             ( $expr, $in ) = extract_bracketed $in, '()';
-            $out .= ( '(?<'  eq substr( $expr, 0, 3 ) ? _convert_chevron_expr $expr :
-                      '(?\'' eq substr( $expr, 0, 3 ) ? _convert_quote_expr $expr :
-                      croak "Invalid escape sequence in $expr." );
+
+            my $target;
+            ( $target, $expr ) = (
+                  '(?<' eq substr( $expr, 0, 3 ) ? _convert_chevron_expr $expr
+                : '(?\'' eq substr( $expr, 0, 3 ) ? _convert_quote_expr $expr
+                : croak "Invalid escape sequence in $expr."
+            );
+            $out .= $expr;
+
+            push @targets, $target;
         }
     }
-    
+
+    if (@targets) {
+
+        # Prepend target clearing code.
+        $out = "(?{" . join( '=', @targets ) . "=undef})$out";
+    }
     return $out;
 }
 
@@ -183,7 +196,7 @@ BEGIN-time instead of runtime.
 
 =head1 AUTHOR
 
-"Joshua ben Jore C" << <jjore@cpan.org> >>
+"Joshua ben Jore" <jjore@cpan.org>
 
 =head1 BUGS
 
@@ -214,50 +227,55 @@ under the same terms as Perl itself.
 =cut
 
 sub _convert_quote_expr {
-    my ( $re ) = validate_pos( @_,
-                               { type => SCALAR,
-                                 regex => qr<\A\(\?\'.+\'.*\)\z>s } );
-    _convert_foo_expr
-      sub { &extract_quotelike },
-        $re;
+    my ($re) = validate_pos(
+        @_,
+        {   type  => SCALAR,
+            regex => qr<\A\(\?\'.+\'.*\)\z>s
+        }
+    );
+    _convert_foo_expr sub {&extract_quotelike}, $re;
 }
 
 sub _convert_chevron_expr {
-    my ( $re ) = validate_pos( @_,
-                               { type => SCALAR,
-                                 regex => qr<\A\(\?\<.+\>.*\)\z>s } );
-    _convert_foo_expr
-      sub { extract_bracketed shift, '<>' },
-        $re;
+    my ($re) = validate_pos(
+        @_,
+        {   type  => SCALAR,
+            regex => qr<\A\(\?\<.+\>.*\)\z>s
+        }
+    );
+    _convert_foo_expr sub { extract_bracketed shift, '<>' }, $re;
 }
 
 sub _convert_foo_expr {
-    my ( $extract, $in ) = validate_pos( @_,
-                                         { type => CODEREF },
-                                         { type => SCALAR,
-                                           regex => qr<^\(\?..+..*\)$>s } );
-    
-    # Zap the (? and ) parts of (?_..._...) away.
-    substr $in, 0, 2, '';
+    my ( $extract, $in ) = validate_pos(
+        @_,
+        { type => CODEREF },
+        {   type  => SCALAR,
+            regex => qr<^\(\?..+..*\)$>s
+        }
+    );
+
+    # Zap the (? and ) parts of (?...) away.
+    substr $in, 0,  2, '';
     substr $in, -1, 1, '';
-    
+
     # Split the _NAME_ part from the EXPR part of _NAME_EXPR
-    my ( $name, $expr ) = $extract->( $in );
-    
+    my ( $name, $expr ) = $extract->($in);
+
     # Possibly transform the contents of $expr if it contained some
     # (?<...>...) expressions.
     $expr = convert $expr;
-    
+
     # Zap the delimiters on _NAME_
-    substr $name, 0, 1, '';
+    substr $name, 0,  1, '';
     substr $name, -1, 1, '';
-    
+
     # Unescape stuff in $name
     $name =~ s/\\(.)/$1/gs;
-    
+
     # Rewrite the expression so it's a plain capture followed by a
     # code block.
-    return "(?:($expr)(?{$name=\$^N})|(?{$name=undef})(?!))";
+    return ( $name => "($expr)(?{$name=\$^N})" );
 }
 
 #####################################################################
@@ -265,19 +283,23 @@ sub _convert_foo_expr {
 
 # Overload magic follows
 
-use overload( '.' => \ &_concat,
-              '""' => \ &_finalize );
+use overload(
+    '.'  => \&_concat,
+    '""' => \&_finalize
+);
 
 sub import {
+
     # Constants are overloaded so their fragments are passed to
     # _postpone().
-    overload::constant 'qr' => \ &_postpone;
+    overload::constant 'qr' => \&_postpone;
 }
 
 sub _postpone {
+
     # _postpone returns an object.
-    my ( $re ) = @_;
-    
+    my ($re) = @_;
+
     # If I was given an undef, pass the error back to the right
     # place. Without this, the user is going to get an error about an
     # undefined value in *my* code. Blech.
@@ -285,38 +307,40 @@ sub _postpone {
         carp "Use of uninitialized value in regexp compilation";
         $re = '';
     }
-    return bless \ $re, __PACKAGE__;
+    return bless \$re, __PACKAGE__;
 }
 
 sub _concat {
+
     # _concat happens anytime something is interpolated. It
     # re-postpones things until later.
 
-    my ( $a, $b, $inverted ) = @_;
-    ($a,$b)=($b,$a) if $inverted;
-    
-    for ( $a, $b ) {
-        $_ = $$_ if ref eq __PACKAGE__;
-	
-	# As in _postpone, I want to pass this warning off as my
-	# caller's problem and not a problem with
-	# Regexp::NamedCaptures.
-        if ( not defined ) {
+    my ( $left, $right, $inverted ) = @_;
+    ( $left, $right ) = ( $right, $left ) if $inverted;
+
+    for my $tgt ( $left, $right ) {
+        $tgt = $$tgt if ref($tgt) eq __PACKAGE__;
+
+        # As in _postpone, I want to pass this warning off as my
+        # caller's problem and not a problem with
+        # Regexp::NamedCaptures.
+        if ( not defined $tgt ) {
             carp "Use of uninitialized value in concatenation (.) or string";
-            $_ = '';
+            $tgt = '';
         }
     }
-    
-    my $re = "$a$b";
-    return bless \ $re, __PACKAGE__;
+
+    my $re = "$left$right";
+    return bless \$re, __PACKAGE__;
 }
 
 sub _finalize {
+
     # _finalize happens when the regex is due to be compiled. Here, I
     # just rethrow the regex to the user-accessible function
     # convert().
-    
-    return convert ${$_[0]};
+
+    return convert ${ $_[0] };
 }
 
 "Read more smut.";

@@ -1,8 +1,25 @@
---- #YAML:1.0
+---
 name: Regexp-NamedCaptures
-version: 0.03
+version: 0.04
 author:
-  - "Joshua ben Jore" <jjore@cpan.org>
+  - '"Joshua ben Jore" <jjore@cpan.org>'
 abstract: Saves capture results to your own variables
 license: perl
-generated_by: Module::Build version 0.2611, without YAML.pm
+resources:
+  license: http://dev.perl.org/licenses/
+requires:
+  Carp: 0
+  Text::Balanced: 0
+  perl: 5.7.1
+  strict: 0
+  warnings: 0
+recommends:
+  Params::Validate: 0
+provides:
+  Regexp::NamedCaptures:
+    file: lib/Regexp/NamedCaptures.pm
+    version: 0.04
+generated_by: Module::Build version 0.271
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.2.html
+  version: 1.2

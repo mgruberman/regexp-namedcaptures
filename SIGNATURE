@@ -1,5 +1,5 @@
 This file contains message digests of all files listed in MANIFEST,
-signed via the Module::Signature module, version 0.44.
+signed via the Module::Signature module, version 0.54.
 
 To verify the content in this distribution, first make sure you have
 Module::Signature installed, then type:
@@ -16,27 +16,28 @@ Hash: SHA1
 
 SHA1 a1becd7709a73310453949105d1d2af2e564a3b5 Build.PL
 SHA1 32b279dac87c2ab4a6114f71b2b3d552b2428cc4 Changes
-SHA1 b15137c01580869ad61c687c4d46a4600447ec57 MANIFEST
-SHA1 f002c0d6a2f2c07b083af25a634f8e84bfb629f6 META.yml
+SHA1 2569c5155adba036b7458ef6d4d8aea1affef876 MANIFEST
+SHA1 8071afc47f0a57c1ceeb67afc8c3e0ed1e448da6 META.yml
 SHA1 9e037b2f91cb2c4573d08e3f536696ab59d52014 Makefile.PL
-SHA1 237f737fd2dd35d61753d8a746b81269b58f4d36 README
-SHA1 54759e9bada973eae26603e4b8c7cfb5da15685b lib/Regexp/NamedCaptures.pm
+SHA1 679a90582a580e9ba85f042a406ab9f4c2399a40 README
+SHA1 add04d856dda9fb3947d31ceea99da591c417748 lib/Regexp/NamedCaptures.pm
 SHA1 e6fb7473239581c7ba91a4bfaec36abbbd00529d t/00signature.t
 SHA1 695f7f50926b1eec073ad55f5775b0b95c25c9ea t/01pod.t
-SHA1 6da39b48ce64b584e4c3274bff96fc76ff484820 t/02pod-coverage.t
+SHA1 0e074de7360f78012ef26637e83bb3673e43b9a3 t/02pod-coverage.t
+SHA1 534b1e71902ddd61151e4ae99f4b9b8a2330be15 t/03yaml.t
 SHA1 74dc1485a88ffe1538a087d36b42ed8ef32b1334 t/10use.t
-SHA1 d26ed31decd33d5daf87ae7dee0545799f708269 t/11basic.t
-SHA1 f48908f85578940c2ca9ddb7bb094e9aa9d32179 t/12quote.t
-SHA1 ad793b436e189db6b4954939bc3d80bbda7d377a t/14interp.t
-SHA1 16eaf16120b1c6c52e149d8f8101e0dc49be8047 t/15code.t
+SHA1 2e8ce81a313b5c1d422300729b5890865d14cb64 t/11basic.t
+SHA1 c26acada767c43fa20efb6f214d42ed34e4952ae t/12quote.t
+SHA1 b2f7979e1585bd1d61d83ee4d4efd1cb05de6ca0 t/14interp.t
+SHA1 1b45ceeffd242fb881deb4b438e95a119c33e1a8 t/15code.t
 SHA1 6301403c3aad3414bbf3cd6f1df0a74330d15914 t/16regexp.t
-SHA1 918478f7ee37de0decad9af001cbff3e87f58ac6 t/20validate.t
-SHA1 c9c8471530c8c11b5b2e4b3755aa4fdc6e6fb76c t/21warn.t
-SHA1 6c2651297c39165ff3ed5a3aef65864b8b67f8ac t/basic
+SHA1 c7d04bbd467804bd5751a39135651254b8560afd t/20validate.t
+SHA1 24c9bf101747ec995005e319cb6e4babaabcbd29 t/21warn.t
+SHA1 2de10951dfaec3356ec3cf40ad3f53f5f2dc7bbd t/basic
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.5 (GNU/Linux)
+Version: GnuPG v1.4.2.2 (GNU/Linux)
 
-iD8DBQFDQ2Tjejb/5debeXcRAq/XAJ9NUnFTD8x7or8b5gLP+qw8Y+E5UgCdHEIL
-+LIf8nRtdrR4sJ6lyelXzqE=
-=0Q6S
+iD8DBQFEmXZrejb/5debeXcRAqgqAJ0cASO/sXpA0ttlMy15y3RdNnfCuQCfYx+J
+CD/EX4OTdOybhJX/8z/G05g=
+=1Pyi
 -----END PGP SIGNATURE-----

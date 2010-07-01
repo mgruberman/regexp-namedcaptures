@@ -2,16 +2,16 @@ NAME
     Regexp::NamedCaptures - Saves capture results to your own variables
 
 VERSION
-    Version 0.03
+    Version 0.04
 
 SYNOPSIS
      use Regexp::NamedCaptures;
      my ( $name, $title, $first, $last );
      /(?<\$name>(?<\$title>Mr\.|Ms\.) (?<\$first>\w+) (?<\$last>\w+))/;
- 
-     # is the same as
- 
-     my ( $name, $title, $first, $last )
+     
+ # is the same as
+     
+ my ( $name, $title, $first, $last )
          = /((Mr\.|Ms\.) (\w+) (\w+))/;
 
      # use re 'eval' when interpolating
@@ -92,7 +92,7 @@ FUNCTIONS
     BEGIN-time instead of runtime.
 
 AUTHOR
-    Joshua ben Jore "<jjore@cpan.org>"
+    "Joshua ben Jore" <jjore@cpan.org>
 
 BUGS
     \Q escapes are completed ignored. If you try to use one to prevent

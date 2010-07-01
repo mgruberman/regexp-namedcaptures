@@ -1,6 +1,6 @@
 #!perl
 use warnings;
-use Test::More tests => 18;
+use Test::More tests => 22;
 use Regexp::NamedCaptures;
 
 $OPEN_NAME = '<';
