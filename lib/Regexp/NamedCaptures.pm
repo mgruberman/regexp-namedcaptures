@@ -44,7 +44,7 @@ Version 0.04
 
 =cut
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 =head1 SYNOPSIS
 
@@ -65,8 +65,11 @@ our $VERSION = '0.04';
 
 =head1 DESCRIPTION
 
-This B<highly experimental> module implements named captures. When
-your regular expression captures something, you can have it
+This B<highly experimental> module implements named captures for
+perl-5.008. Perl-5.10+ has built-in named captures and you should not
+attempt to use this module.
+
+When your regular expression captures something, you can have it
 automatically copied out to the right location. This is an improvement
 over normal perl because now you don't have to deal with positional
 captures. When your expression is complex and there are multiple or
